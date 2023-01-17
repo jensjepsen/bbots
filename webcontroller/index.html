@@ -1,0 +1,72 @@
+<html>
+    <script>
+        const serviceUUID = '6722b880-6e27-40b0-9e16-e51f6a71c52b';
+        const characteristicUUID = '1d38d82c-cdda-489e-bc1f-4fe1ea4b3dbb';
+        const actionCharacteristicUUID = 'a8603e05-3a8c-4cfa-a595-59da63e98e56';
+        const gyroCharacteristicUUID = '4f256ffc-3d99-4cc7-8da3-81e7e93e0c5d';
+        let actionCharacteristic = null;
+        async function listen () {
+            const device = await navigator.bluetooth.requestDevice({
+                filters: [
+                    {services: [serviceUUID]} 
+                ]
+            })
+            console.log('pre connect')
+            const connection = await device.gatt.connect();
+            console.log('connected')
+            const service = await connection.getPrimaryService(serviceUUID);
+            console.log('got service')
+            const characteristic = await service.getCharacteristic(characteristicUUID);
+            await characteristic.startNotifications();
+
+            const msgView = document.getElementById('msg')
+            characteristic.addEventListener('characteristicvaluechanged', (event) => {
+                msgView.innerHTML = event.target.value.getInt8()
+            })
+            
+            
+            const gyroCharacteristic = await service.getCharacteristic(gyroCharacteristicUUID);
+            await gyroCharacteristic.startNotifications();
+
+            const gyroView = document.getElementById('gyro')
+            gyroCharacteristic.addEventListener('characteristicvaluechanged', (event) => { 
+                const result = new Float32Array(event.target.value.buffer)
+                gyroView.innerHTML = result.join(',')
+                
+            })
+            console.log('hello')
+
+            actionCharacteristic = await service.getCharacteristic(actionCharacteristicUUID);
+        }
+
+        function writeAction(action) {
+            if(!!actionCharacteristic) {
+                console.log('act')
+                actionCharacteristic.writeValue(Uint8Array.of(action))
+            }
+        }
+
+        const keyToAction = {
+            'ArrowUp': 1,
+            'ArrowDown': 2,
+            'ArrowLeft': 3,
+            'ArrowRight': 4,
+            ' ': 0
+        }
+
+        document.addEventListener('keydown', (e) => {
+            action = keyToAction[e.key]
+            if(action !== undefined) {
+                writeAction(action)
+            }
+        })
+    </script>
+    <body>
+        <button onclick="listen()">Listen</button>
+        <div id="msg"></div>
+        <div id="gyro"></div>
+        <div onclick="writeAction(1)">Forward</div>
+        <div onclick="writeAction(2)">Backward</div>
+        <div onclick="writeAction(0)">Stop</div>
+    </body>
+</html>
