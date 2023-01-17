@@ -32,7 +32,10 @@ The two values that are pin can take are, **HIGH** or **LOW**. Setting a pins va
 If we have a lamp, we can wire the lamp to ground and a pin of our choosing, and control whether the lamp is on, by setting the pin to either **HIGH** or **LOW**. If we set the pin to **HIGH** one wire from the lamp will be connected to the positive terminal and the other to ground, creating a circuit with a current across it with the lamp in the middle. This will make our lamp light up. If we set it to **LOW**, this will make both the wires coming from our lamp connect to ground, placing the lamp in a circuit with no voltage across it, leaving us in the dark.
 
 ## A simple arduino program
-Copied from: [Arduino homepage](https://docs.arduino.cc/built-in-examples/basics/Blink)
+
+TODO: Add description of how to upload the program to the thing
+
+Copied from [the Arduino homepage](https://docs.arduino.cc/built-in-examples/basics/Blink)
 ```c++
 // the setup function runs once when you press reset or power the board
 void setup() {
@@ -60,3 +63,13 @@ Here's an overview of what the circuit that ties all these things together:
 That's it (for the circuit).
 
 ## A less simple program
+TODO: Add a program here for the motors.
+
+## Remote controlling
+TODO: Describe bluetooth in broad terms
+
+TODO: Add program outline for bluetooth, not whole thing
+
+```c++
+
+```
