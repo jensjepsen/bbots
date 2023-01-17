@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="ijXYwaAcvjZmBr0deVRs" name="Page-1">
-        <mxGraphModel dx="1797" dy="1064" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" background="#ffffff" math="0" shadow="0">
+        <mxGraphModel dx="2134" dy="967" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" background="#ffffff" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -54,10 +54,10 @@
                     </mxGeometry>
                 </mxCell>
                 <mxCell id="28" value="" style="group;rotation=-180;" vertex="1" connectable="0" parent="1">
-                    <mxGeometry x="320" y="620" width="283.1400000000001" height="215.24" as="geometry"/>
+                    <mxGeometry x="320" y="620" width="320" height="215.24" as="geometry"/>
                 </mxCell>
                 <mxCell id="29" value="" style="group;rotation=-180;" vertex="1" connectable="0" parent="28">
-                    <mxGeometry width="283.1400000000001" height="215.24" as="geometry"/>
+                    <mxGeometry width="320" height="215.24" as="geometry"/>
                 </mxCell>
                 <mxCell id="30" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;exitX=0.334;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;strokeColor=#001DBC;strokeWidth=3;fillColor=#0050ef;" edge="1" parent="29" source="31">
                     <mxGeometry relative="1" as="geometry">
@@ -73,6 +73,9 @@
                 </mxCell>
                 <mxCell id="32" value="" style="verticalLabelPosition=bottom;aspect=fixed;html=1;verticalAlign=top;strokeColor=#000000;fillColor=#000000;align=center;outlineConnect=0;shape=mxgraph.fluid_power.x11390;points=[[0.334,0,0],[0.334,1,0]];rotation=-270;" vertex="1" parent="29">
                     <mxGeometry x="329.83000000000004" y="77" width="83.38" height="92.9" as="geometry"/>
+                </mxCell>
+                <mxCell id="70" value="&lt;font color=&quot;#000000&quot;&gt;Right motors&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="29">
+                    <mxGeometry x="240" y="149.89999999999998" width="80" height="20" as="geometry"/>
                 </mxCell>
                 <mxCell id="33" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;exitX=0.334;exitY=0;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.25;entryY=0;entryDx=0;entryDy=0;strokeColor=#B20000;strokeWidth=3;fillColor=#e51400;" edge="1" parent="28" source="31">
                     <mxGeometry relative="1" as="geometry">
@@ -226,6 +229,18 @@
                 </mxCell>
                 <mxCell id="68" value="" style="pointerEvents=1;shadow=0;dashed=0;html=1;strokeColor=none;fillColor=#4495D1;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;align=center;outlineConnect=0;shape=mxgraph.veeam.usb;rotation=0;direction=south;" vertex="1" parent="1">
                     <mxGeometry x="-82.8" y="60" width="18.4" height="52.8" as="geometry"/>
+                </mxCell>
+                <mxCell id="69" value="&lt;font color=&quot;#000000&quot;&gt;Left motors&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="560" y="80" width="80" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="71" value="&lt;font color=&quot;#000000&quot;&gt;H-Bridge&lt;/font&gt;" style="text;html=1;align=right;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="711.85" y="270" width="60" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="72" value="&lt;font color=&quot;#000000&quot;&gt;Arduino Nano BLE Sense&lt;/font&gt;" style="text;html=1;align=right;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="-148.6" y="1060" width="150" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="73" value="&lt;font color=&quot;#000000&quot;&gt;Powerbank&lt;/font&gt;" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="-190" y="80" width="80" height="20" as="geometry"/>
                 </mxCell>
             </root>
         </mxGraphModel>
