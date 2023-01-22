@@ -88,8 +88,10 @@ void setup() {
       Serial.println("Waiting for BLE to start");
       while(1);
     }
+    
     // Set the BLE service name (this is the name you will see when looking connecting to your bot) 
     BLE.setLocalName("RobotService");
+    BLE.setDeviceName("RobotService");
     BLE.setAdvertisedService(robotService);
 
     // Add BLE characteristics

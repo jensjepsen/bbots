@@ -1,72 +1,131 @@
+<!DOCTYPE html>
 <html>
-    <script>
-        const serviceUUID = '6722b880-6e27-40b0-9e16-e51f6a71c52b';
-        const characteristicUUID = '1d38d82c-cdda-489e-bc1f-4fe1ea4b3dbb';
-        const actionCharacteristicUUID = 'a8603e05-3a8c-4cfa-a595-59da63e98e56';
-        const gyroCharacteristicUUID = '4f256ffc-3d99-4cc7-8da3-81e7e93e0c5d';
-        let actionCharacteristic = null;
-        async function listen () {
-            const device = await navigator.bluetooth.requestDevice({
-                filters: [
-                    {services: [serviceUUID]} 
-                ]
-            })
-            console.log('pre connect')
-            const connection = await device.gatt.connect();
-            console.log('connected')
-            const service = await connection.getPrimaryService(serviceUUID);
-            console.log('got service')
-            const characteristic = await service.getCharacteristic(characteristicUUID);
-            await characteristic.startNotifications();
+    <head>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+        <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+        <script defer>
+            const serviceUUID = '6722b880-6e27-40b0-9e16-e51f6a71c52b';
+            const characteristicUUID = '1d38d82c-cdda-489e-bc1f-4fe1ea4b3dbb';
+            const actionCharacteristicUUID = 'a8603e05-3a8c-4cfa-a595-59da63e98e56';
+            const gyroCharacteristicUUID = '4f256ffc-3d99-4cc7-8da3-81e7e93e0c5d';
+            let actionCharacteristic = null;
 
-            const msgView = document.getElementById('msg')
-            characteristic.addEventListener('characteristicvaluechanged', (event) => {
-                msgView.innerHTML = event.target.value.getInt8()
+            document.addEventListener('alpine:init', () => {
+                Alpine.store('connected', false)
+                Alpine.store('lastAction', 0)
             })
-            
-            
-            const gyroCharacteristic = await service.getCharacteristic(gyroCharacteristicUUID);
-            await gyroCharacteristic.startNotifications();
-
-            const gyroView = document.getElementById('gyro')
-            gyroCharacteristic.addEventListener('characteristicvaluechanged', (event) => { 
-                const result = new Float32Array(event.target.value.buffer)
-                gyroView.innerHTML = result.join(',')
+        
+            async function listen () {
+                const device = await navigator.bluetooth.requestDevice({
+                    filters: [
+                        {services: [serviceUUID]} 
+                    ]
+                })
+                device.addEventListener('gattserverdisconnected', () => {
+                    Alpine.store('connected', false)
+                });
+                console.log('pre connect')
+                const connection = await device.gatt.connect();
+                console.log('connected')
+                const service = await connection.getPrimaryService(serviceUUID);
+                console.log('got service')
+                const characteristic = await service.getCharacteristic(characteristicUUID);
+                await characteristic.startNotifications();
                 
+                Alpine.store('connected', true)
+
+                const msgView = document.getElementById('msg')
+                characteristic.addEventListener('characteristicvaluechanged', (event) => {
+                    msgView.innerHTML = event.target.value.getInt8()
+                })
+                
+                
+                const gyroCharacteristic = await service.getCharacteristic(gyroCharacteristicUUID);
+                await gyroCharacteristic.startNotifications();
+
+                const gyroView = document.getElementById('gyro')
+                gyroCharacteristic.addEventListener('characteristicvaluechanged', (event) => { 
+                    const result = new Float32Array(event.target.value.buffer)
+                    gyroView.innerHTML = result.join(',')
+                    
+                })
+                console.log('hello')
+
+                actionCharacteristic = await service.getCharacteristic(actionCharacteristicUUID);
+            }
+
+            function writeAction(action) {
+                if(!!actionCharacteristic) {
+                    Alpine.store('lastAction', action)
+                    console.log('act')
+                    actionCharacteristic.writeValue(Uint8Array.of(action))
+                }
+            }
+
+            const keyToAction = {
+                'ArrowUp': 1,
+                'ArrowDown': 2,
+                'ArrowLeft': 3,
+                'ArrowRight': 4,
+                ' ': 0
+            }
+                
+
+            document.addEventListener('keydown', (e) => {
+                action = keyToAction[e.key]
+                if(action !== undefined) {
+                    writeAction(action)
+                }
             })
-            console.log('hello')
-
-            actionCharacteristic = await service.getCharacteristic(actionCharacteristicUUID);
-        }
-
-        function writeAction(action) {
-            if(!!actionCharacteristic) {
-                console.log('act')
-                actionCharacteristic.writeValue(Uint8Array.of(action))
+        </script>
+        <style>
+            body {
+                margin-top: 10px;
             }
-        }
-
-        const keyToAction = {
-            'ArrowUp': 1,
-            'ArrowDown': 2,
-            'ArrowLeft': 3,
-            'ArrowRight': 4,
-            ' ': 0
-        }
-
-        document.addEventListener('keydown', (e) => {
-            action = keyToAction[e.key]
-            if(action !== undefined) {
-                writeAction(action)
+            #arrows-bottom, #stop {
+                margin-top: 5px;
             }
-        })
-    </script>
+            #arrows > div {
+                display: flex;
+                justify-content: center;
+            }
+            #arrow-left {
+                transform: rotate(-90deg);
+                margin-right: 5px;
+            }
+            #arrow-right {
+                transform: rotate(90deg);
+                margin-left: 5px;
+            }
+            #arrow-down {
+                transform: rotate(180deg);
+            }
+            #msg, #gyro {
+                display: none;
+            }
+        </style>
+    </head>
     <body>
-        <button onclick="listen()">Listen</button>
-        <div id="msg"></div>
-        <div id="gyro"></div>
-        <div onclick="writeAction(1)">Forward</div>
-        <div onclick="writeAction(2)">Backward</div>
-        <div onclick="writeAction(0)">Stop</div>
+        <div class="container is-fluid">
+            <div class="block">
+                <button class="button is-primary" :disabled="$store.connected " x-data onclick="listen()" x-text="$store.connected ? 'Connected' : 'Connect'"></button>
+            </div>
+            <div id="msg"></div>
+            <div id="gyro"></div>
+            <div class="box is-2" id="arrows">
+                <span><em>Hint: Use the arrow keys on your keyboard to control your bot. Press space to stop.</em></span>
+                <div id="arrows-top">
+                    <div x-data class="button" @click="writeAction(1)" :class="$store.lastAction == 1 && 'is-primary'" id="arrow-up"><span class="icon is-large"><img src="assets/arrow.svg"></span></div>
+                </div>
+                <div id="arrows-bottom">
+                    <div x-data class="button" @click="writeAction(3)" :class="$store.lastAction == 3 && 'is-primary'" id="arrow-left"><span class="icon is-large"><img src="assets/arrow.svg"></span></div>
+                    <div x-data class="button" @click="writeAction(2)" :class="$store.lastAction == 2 && 'is-primary'" id="arrow-down"><span class="icon is-large"><img src="assets/arrow.svg"></span></div>
+                    <div x-data class="button" @click="writeAction(4)" :class="$store.lastAction == 4 && 'is-primary'" id="arrow-right"><span class="icon is-large"><img src="assets/arrow.svg"></span></div>
+                </div>
+                <div id="stop">
+                    <div x-data class="button" @click="writeAction(0)" :class="$store.lastAction == 0 && 'is-primary'" id="stop" x-text="$store.lastAction == 0 ? 'Stopped' : 'Stop'"></div>
+                </div>
+            </div>
+        </div>
     </body>
 </html>
