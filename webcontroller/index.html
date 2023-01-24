@@ -105,24 +105,28 @@
         </style>
     </head>
     <body>
-        <div class="container is-fluid">
-            <div class="block">
-                <button class="button is-primary" :disabled="$store.connected " x-data onclick="listen()" x-text="$store.connected ? 'Connected' : 'Connect'"></button>
-            </div>
-            <div id="msg"></div>
-            <div id="gyro"></div>
-            <div class="box is-2" id="arrows">
-                <span><em>Hint: Use the arrow keys on your keyboard to control your bot. Press space to stop.</em></span>
-                <div id="arrows-top">
-                    <div x-data class="button" @click="writeAction(1)" :class="$store.lastAction == 1 && 'is-primary'" id="arrow-up"><span class="icon is-large"><img src="assets/arrow.svg"></span></div>
-                </div>
-                <div id="arrows-bottom">
-                    <div x-data class="button" @click="writeAction(3)" :class="$store.lastAction == 3 && 'is-primary'" id="arrow-left"><span class="icon is-large"><img src="assets/arrow.svg"></span></div>
-                    <div x-data class="button" @click="writeAction(2)" :class="$store.lastAction == 2 && 'is-primary'" id="arrow-down"><span class="icon is-large"><img src="assets/arrow.svg"></span></div>
-                    <div x-data class="button" @click="writeAction(4)" :class="$store.lastAction == 4 && 'is-primary'" id="arrow-right"><span class="icon is-large"><img src="assets/arrow.svg"></span></div>
-                </div>
-                <div id="stop">
-                    <div x-data class="button" @click="writeAction(0)" :class="$store.lastAction == 0 && 'is-primary'" id="stop" x-text="$store.lastAction == 0 ? 'Stopped' : 'Stop'"></div>
+        <div class="container">
+            <div class="columns is-justify-content-center">
+                <div class="column is-half">
+                    <div class="block">
+                        <button class="button is-primary" :disabled="$store.connected " x-data onclick="listen()" x-text="$store.connected ? 'Connected' : 'Connect'"></button>
+                    </div>
+                    <div id="msg"></div>
+                    <div id="gyro"></div>
+                    <div class="box is-2" id="arrows">
+                        <span><em>Hint: Use the arrow keys on your keyboard to control your bot. Press space to stop.</em></span>
+                        <div id="arrows-top">
+                            <div x-data class="button" @click="writeAction(1)" :class="$store.lastAction == 1 && 'is-primary'" id="arrow-up"><span class="icon is-large"><img src="assets/arrow.svg"></span></div>
+                        </div>
+                        <div id="arrows-bottom">
+                            <div x-data class="button" @click="writeAction(3)" :class="$store.lastAction == 3 && 'is-primary'" id="arrow-left"><span class="icon is-large"><img src="assets/arrow.svg"></span></div>
+                            <div x-data class="button" @click="writeAction(2)" :class="$store.lastAction == 2 && 'is-primary'" id="arrow-down"><span class="icon is-large"><img src="assets/arrow.svg"></span></div>
+                            <div x-data class="button" @click="writeAction(4)" :class="$store.lastAction == 4 && 'is-primary'" id="arrow-right"><span class="icon is-large"><img src="assets/arrow.svg"></span></div>
+                        </div>
+                        <div id="stop">
+                            <div x-data class="button" @click="writeAction(0)" :class="$store.lastAction == 0 && 'is-primary'" id="stop" x-text="$store.lastAction == 0 ? 'Stopped' : 'Stop'"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
