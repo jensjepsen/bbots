@@ -24,11 +24,11 @@
                 device.addEventListener('gattserverdisconnected', () => {
                     Alpine.store('connected', false)
                 });
-                console.log('pre connect')
+                console.debug('pre connect')
                 const connection = await device.gatt.connect();
-                console.log('connected')
+                console.debug('connected')
                 const service = await connection.getPrimaryService(serviceUUID);
-                console.log('got service')
+                console.debug('got service')
                 const characteristic = await service.getCharacteristic(characteristicUUID);
                 await characteristic.startNotifications();
                 
@@ -49,7 +49,6 @@
                     gyroView.innerHTML = result.join(',')
                     
                 })
-                console.log('hello')
 
                 actionCharacteristic = await service.getCharacteristic(actionCharacteristicUUID);
             }
@@ -57,7 +56,7 @@
             function writeAction(action) {
                 if(!!actionCharacteristic) {
                     Alpine.store('lastAction', action)
-                    console.log('act')
+                    console.debug('act')
                     actionCharacteristic.writeValue(Uint8Array.of(action))
                 }
             }
