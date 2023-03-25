@@ -3,6 +3,7 @@
     <head>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
         <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
         <script src="gpt.js"></script>
         <script src="rl.js"></script>
         <script defer>
@@ -19,7 +20,7 @@
                 Alpine.store('connected', false)
                 Alpine.store('lastAction', 0)
                 Alpine.store('token', getToken() || '')
-                Alpine.store('dists', '')
+                Alpine.store('dists', [0, 0, 0, 0])
                 Alpine.store('orientation', '')
                 Alpine.store('desiredOrientation', '')
                 Alpine.store('stopAll', false)
@@ -65,7 +66,7 @@
                 await distCharacteristic.startNotifications();
 
                 distCharacteristic.addEventListener('characteristicvaluechanged', (event) => { 
-                    const result = new Uint8Array(event.target.value.buffer)
+                    const result = new Uint16Array(event.target.value.buffer)
                     Alpine.store('dists', result)
                 })
 
@@ -92,6 +93,8 @@
 
             function stopAll() {
                 writeAction(0)
+                Alpine.store('stopAll', true)
+                setTimeout(() => Alpine.store('stopAll', false), 3000)
             }
 
             const keyToAction = {

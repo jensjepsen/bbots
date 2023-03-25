@@ -4,25 +4,24 @@
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BNO055.h>
 #include <utility/imumaths.h>
+#include "ultradist.h"
 
 Adafruit_BNO055 bno = Adafruit_BNO055(55);
 const int REPORT_EVERY = 10;
 
 const float ROTATION_TOLERANCE = 5;
 
-const unsigned int LEFT_1 = 7;
-const unsigned int LEFT_2 = 8;
+const unsigned int LEFT_1 = 9;
+const unsigned int LEFT_2 = 10;
 
-const unsigned int RIGHT_1 = 9;
-const unsigned int RIGHT_2 = 10;
+const unsigned int RIGHT_1 = 11;
+const unsigned int RIGHT_2 = 12;
 
-const unsigned int DIST_FRONT = 6;
-const unsigned int DIST_LEFT = 5;
-const unsigned int DIST_RIGHT = 4;
+UltraDist frontSensor(8, 7);
+UltraDist leftSensor(6, 5);
+UltraDist rightSensor(4, 3);
 
-
-uint8_t distInfo[3];
-
+uint16_t distInfo[4];
 
 float imuInfo [4];
 
@@ -35,8 +34,20 @@ BLEByteCharacteristic valueCharacteristic("1d38d82c-cdda-489e-bc1f-4fe1ea4b3dbb"
 BLECharacteristic gyroCharacteristic("4f256ffc-3d99-4cc7-8da3-81e7e93e0c5d", BLENotify | BLEWriteWithoutResponse, sizeof(imuInfo));
 BLECharacteristic distInfoCharacteristic("01cef122-aed3-11ed-afa1-0242ac120002", BLENotify | BLEWriteWithoutResponse, sizeof(distInfo));
 
-
 unsigned int action = 0;
+
+void handleFrontSensor() {
+  UltraDistHandleInterrupt(&frontSensor);
+}
+
+void handleLeftSensor() {
+  UltraDistHandleInterrupt(&leftSensor);
+}
+
+void handleRightSensor() {
+  UltraDistHandleInterrupt(&rightSensor);
+}
+
 
 float modmod (float e, float d) {
   return e - floor(e/d) * d;
@@ -157,10 +168,10 @@ void setup() {
 
 
     // Set the mode of the distance sensors and interrupts
-    pinMode(DIST_FRONT, INPUT_PULLUP);
-    pinMode(DIST_LEFT, INPUT_PULLUP);
-    pinMode(DIST_RIGHT, INPUT_PULLUP);
-    
+    frontSensor.attachHandler(handleFrontSensor);
+    leftSensor.attachHandler(handleLeftSensor);
+    rightSensor.attachHandler(handleRightSensor);
+
     // Instruct IMU to use external crystal
     delay(1000);
     bno.setExtCrystalUse(true);
@@ -170,14 +181,23 @@ void setup() {
 
 byte lastRead = 0;
 u_long last_report = 0;
+const u_long triggerEvery = 20000;
+u_long last_trigger = 0;
 void loop() {
-  //u_long now = micros();
+    u_long now = micros();
   
   //if (now - last_report > REPORT_EVERY) {
     BLE.poll();
     sensors_event_t event;
     bno.getEvent(&event);
     
+    if(now - last_trigger > triggerEvery) {
+      frontSensor.trigger();
+      leftSensor.trigger();
+      rightSensor.trigger();
+      last_trigger = now;
+    }
+
     //if (action != actionCharacteristic.value()) {
     action = actionCharacteristic.value();
     //valueCharacteristic.writeValue(action);
@@ -190,9 +210,10 @@ void loop() {
     imuInfo[3] = angleDist < ROTATION_TOLERANCE;
     gyroCharacteristic.writeValue(imuInfo, sizeof(imuInfo), false);
 
-    distInfo[0] = digitalRead(DIST_FRONT);
-    distInfo[1] = digitalRead(DIST_LEFT);
-    distInfo[2] = digitalRead(DIST_RIGHT);
+    distInfo[0] = frontSensor.dist;
+    distInfo[2] = leftSensor.dist;
+    distInfo[3] = rightSensor.dist;
+    
     distInfoCharacteristic.writeValue(distInfo, sizeof(distInfo), false);
     //last_report = now;
 
