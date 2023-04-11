@@ -30,34 +30,30 @@ class RL {
     }
 }
 
-window.rl = new RL('test2.onnx', 4, 10)
-
-function nextRl () {
+function nextRl (rl, options) {
     let dists = Array.from(Alpine.store('dists'))
-    console.log(dists)
     dists = [
-        (dists[0] < 200) * 1.0, //| dists[1]
-        (dists[2] < 150) * 1.0,
-        (dists[3] < 150) * 1.0, 
+        (dists[0] < options.thresholds.front) * 1.0, //| dists[1]
+        (dists[2] < options.thresholds.left) * 1.0,
+        (dists[3] < options.thresholds.right) * 1.0, 
     ]
 
     const action2timeout = {
-        0: 50,
-        1: 10,
-        2: 10,
-        3: 300,
-        4: 300
+        0: 25,
+        1: 25,
+        2: 25,
+        3: 25,
+        4: 25
     }
 
     const state = dists.concat([0])
-    console.log(state)
     rl.act(state).then((action) => {
         if(Alpine.store('stopAll')) {
             writeAction(0)
         } else {
             writeAction(action)
         
-            setTimeout(nextRl, action2timeout[action])
+            setTimeout(() => nextRl(rl, options), action2timeout[action])
         }
         
     })

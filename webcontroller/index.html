@@ -6,125 +6,9 @@
         <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
         <script src="gpt.js"></script>
         <script src="rl.js"></script>
-        <script defer>
-            const MAX_DIST = 2500;
-            const serviceUUID = '6722b880-6e27-40b0-9e16-e51f6a71c52b';
-            const characteristicUUID = '1d38d82c-cdda-489e-bc1f-4fe1ea4b3dbb';
-            const actionCharacteristicUUID = 'a8603e05-3a8c-4cfa-a595-59da63e98e56';
-            const gyroCharacteristicUUID = '4f256ffc-3d99-4cc7-8da3-81e7e93e0c5d';
-            const distCharacteristicUUID = '01cef122-aed3-11ed-afa1-0242ac120002';
-            const rotationCharacteristicUUID = '91e2b3de-4bf8-4998-8a11-b28b109156ff';
-            let actionCharacteristic = null;
-
-            document.addEventListener('alpine:init', () => {
-                Alpine.store('connected', false)
-                Alpine.store('lastAction', 0)
-                Alpine.store('token', getToken() || '')
-                Alpine.store('dists', [0, 0, 0, 0])
-                Alpine.store('orientation', '')
-                Alpine.store('desiredOrientation', '')
-                Alpine.store('stopAll', false)
-            })
-        
-            async function listen () {
-                const device = await navigator.bluetooth.requestDevice({
-                    filters: [
-                        {services: [serviceUUID]} 
-                    ]
-                })
-                device.addEventListener('gattserverdisconnected', () => {
-                    Alpine.store('connected', false)
-                });
-                console.debug('pre connect')
-                const connection = await device.gatt.connect();
-                console.debug('connected')
-                const service = await connection.getPrimaryService(serviceUUID);
-                console.debug('got service')
-                const characteristic = await service.getCharacteristic(characteristicUUID);
-                await characteristic.startNotifications();
-                
-                Alpine.store('connected', true)
-
-                const msgView = document.getElementById('msg')
-                characteristic.addEventListener('characteristicvaluechanged', (event) => {
-                    msgView.innerHTML = event.target.value.getInt8()
-                })
-                
-                
-                const gyroCharacteristic = await service.getCharacteristic(gyroCharacteristicUUID);
-                await gyroCharacteristic.startNotifications();
-
-                const gyroView = document.getElementById('gyro')
-                gyroCharacteristic.addEventListener('characteristicvaluechanged', (event) => { 
-                    const result = new Float32Array(event.target.value.buffer)
-                    Alpine.store('desiredOrientation', result.slice(-1))
-                    Alpine.store('orientation', result)
-                    
-                })
-
-                const distCharacteristic = await service.getCharacteristic(distCharacteristicUUID);
-                await distCharacteristic.startNotifications();
-
-                distCharacteristic.addEventListener('characteristicvaluechanged', (event) => { 
-                    const result = new Uint16Array(event.target.value.buffer)
-                    Alpine.store('dists', result)
-                })
-
-
-                actionCharacteristic = await service.getCharacteristic(actionCharacteristicUUID)
-                rotationCharacteristic = await service.getCharacteristic(rotationCharacteristicUUID)
-            }
-
-            function writeCommand(command, rotation) {
-                console.debug('command ' + command + ' ' + rotation ? rotation : '')
-                if(rotation) {
-                    rotationCharacteristic.writeValue(Float32Array.of(rotation))
-                }
-                writeAction(commandToAction[command])
-            }
-
-            function writeAction(action) {
-                if(!!actionCharacteristic) {
-                    Alpine.store('lastAction', action)
-                    console.debug('act')
-                    actionCharacteristic.writeValue(Uint8Array.of(action))
-                }
-            }
-
-            function stopAll() {
-                writeAction(0)
-                Alpine.store('stopAll', true)
-                setTimeout(() => Alpine.store('stopAll', false), 3000)
-            }
-
-            const keyToAction = {
-                'ArrowUp': 1,
-                'ArrowDown': 2,
-                'ArrowLeft': 3,
-                'ArrowRight': 4,
-                ' ': 0
-            }
-
-            const commandToAction = {
-                'stop': 0,
-                'forward': 1,
-                'backward': 2,
-                'turnLeft': 3,
-                'turnRight': 4,
-                'turnTo': 5,
-                'rotate': 5
-            }
-            
-            document.addEventListener('keydown', (e) => {
-                if (['TEXTAREA', 'INPUT'].includes(e.target.tagName.toUpperCase())) {
-                    return
-                }
-                action = keyToAction[e.key]
-                if(action !== undefined) {
-                    writeAction(action)
-                }
-            })
-        </script>
+        <script src="https://cdn.jsdelivr.net/pyodide/v0.23.0/full/pyodide.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.16.0/ace.min.js" integrity="sha512-4T3GMbqlA/8FAPZRSo/JbV6RNL4s/XkV86vNHzuHPHPeqKJWbV3Sp5KicgK3NwB+bd4KOm1Q6c7O3RNV2o6RPg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.16.0/ext-language_tools.min.js" integrity="sha512-EyVA03LdP4umfKhRAN3pNCwcgucxh6Xa4cig5rZZt4XSMK9+a4NxPPoGot8k5eWPPgtnCFSo6KOJ0KROUMsBfg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         <style>
             body {
                 margin-top: 10px;
@@ -150,19 +34,25 @@
             #msg, #gyro {
                 display: none;
             }
+            .auto-pilot-thresholds .input {
+                width: 5em !important;
+            }
+            #control-editor {
+                min-height: 400px;
+            }
         </style>
     </head>
     <body>
         <div class="container">
             <div class="columns is-justify-content-center">
                 <div class="column is-half">
-                    <div class="row">
+                    <div class="row box">
                         <div class="block">
                             <button class="button is-primary" :disabled="$store.connected " x-data onclick="listen()" x-text="$store.connected ? 'Connected' : 'Connect'"></button>
                         </div>
                         <div id="msg"></div>
                         <div id="gyro"></div>
-                        <div class="box is-2" id="arrows">
+                        <div class="is-2" id="arrows">
                             <span><em>Hint: Use the arrow keys on your keyboard to control your bot. Press space to stop.</em></span>
                             <div id="arrows-top">
                                 <div x-data class="button" @click="writeAction(1)" :class="$store.lastAction == 1 && 'is-primary'" id="arrow-up"><span class="icon is-large"><img src="assets/arrow.svg"></span></div>
@@ -177,15 +67,66 @@
                             </div>
                         </div>
                     </div>
-                    <div x-data class="row">
+                    <div x-data class="row is-flex box">
                         <template x-for="dist of $store.dists">
-                            <div x-text="dist"></div>
+                            <div class="is-flex-grow-1" x-text="dist"></div>
                         </template>
-                        <div x-text="$store.orientation"></div>
+                        <div class="is-flex-grow-1" x-text="$store.orientation"></div>
                     </div>
-                    <div class="row">
+                    
+                    <div x-data class="row box">
+                        <b>Program</b>
+                        <div class="columns">
+                            <div class="column">
+                                <div id="control-editor" class="block"></div>
+                            </div>
+                            <div class="column">
+                                <code x-html="$store.programResult"></code>
+                            </div>
+                        </div>
+                        <div class="field is-grouped">
+                            <p class="control">
+                                <button class="button is-info" @click="runProgram()">
+                                    Run
+                                </button>
+                                <template x-if="!$store.programLooping">
+                                    <button class="button is-info" @click="loopProgram()">
+                                        Loop
+                                    </button>
+                                </template>
+                                <template x-if="$store.programLooping">
+                                    <button class="button is-danger" @click="stopAll()">
+                                        Stop
+                                    </button>
+                                </template>
+                            </p>
+                        </div>
+                    </div>
+                    <div x-data="{started: false, options: {thresholds: {front: 100, left: 100, right: 100 }}}" class="row box">
+                        <template x-if="!started">
+                            <button class="button is-primary" @click="Alpine.store('stopAll', false); started = true; nextRl(window.rl, options)">Enable Auto Pilot</button>
+                        </template>
+                        <template x-if="started">
+                            <button class="button is-danger" @click="Alpine.store('stopAll', true); started=false">Disable Auto Pilot</button>
+                        </template>
+                        <div class="field is-grouped auto-pilot-thresholds">
+                            <p class="control">
+                                <label class="label">front</label>
+                                <input class="input is-small" x-model="options.thresholds.front" />
+                            </p>
+                            <p class="control">
+                                <label class="label">left</label>
+                                <input class="input is-small" x-model="options.thresholds.left" />    
+                            </p>
+                            <p class="control">
+                                <label class="label">right</label>
+                                <input class="input is-small" x-model="options.thresholds.right" />
+                            </p>
+                        </div>
+                    </div>
+                    <div class="row box">
                         <div x-data="{ input: '', plan: [], planning: false, autoRun: true}" class="block">
-                            <h1 class="title is-3">Plan</h1>
+                            <b>Plan</b>
                             <div class="field">
                                 <label class="label">OpenAI token</label>
                                 <p class="control">
@@ -247,5 +188,192 @@
                 </div>
             </div>
         </div>
+        <script>
+            const MAX_DIST = 2500;
+            const serviceUUID = '6722b880-6e27-40b0-9e16-e51f6a71c52b';
+            const characteristicUUID = '1d38d82c-cdda-489e-bc1f-4fe1ea4b3dbb';
+            const actionCharacteristicUUID = 'a8603e05-3a8c-4cfa-a595-59da63e98e56';
+            const gyroCharacteristicUUID = '4f256ffc-3d99-4cc7-8da3-81e7e93e0c5d';
+            const distCharacteristicUUID = '01cef122-aed3-11ed-afa1-0242ac120002';
+            const rotationCharacteristicUUID = '91e2b3de-4bf8-4998-8a11-b28b109156ff';
+            let actionCharacteristic = null;
+
+            document.addEventListener('alpine:init', () => {
+                Alpine.store('connected', false)
+                Alpine.store('lastAction', 0)
+                Alpine.store('token', getToken() || '')
+                Alpine.store('dists', [0, 0, 0, 0])
+                Alpine.store('orientation', '')
+                Alpine.store('desiredOrientation', '')
+                Alpine.store('stopAll', false)
+                Alpine.store('programResult', '')
+                Alpine.store('programLooping', false)
+            })
+
+            window.rl = new RL('test2.onnx', 4, 10)
+        
+            async function listen () {
+                const device = await navigator.bluetooth.requestDevice({
+                    filters: [
+                        {services: [serviceUUID]} 
+                    ]
+                })
+                device.addEventListener('gattserverdisconnected', () => {
+                    Alpine.store('connected', false)
+                });
+                console.debug('pre connect')
+                const connection = await device.gatt.connect();
+                console.debug('connected')
+                const service = await connection.getPrimaryService(serviceUUID);
+                console.debug('got service')
+                const characteristic = await service.getCharacteristic(characteristicUUID);
+                await characteristic.startNotifications();
+                
+                Alpine.store('connected', true)
+
+                const msgView = document.getElementById('msg')
+                characteristic.addEventListener('characteristicvaluechanged', (event) => {
+                    msgView.innerHTML = event.target.value.getInt8()
+                })
+                
+                
+                const gyroCharacteristic = await service.getCharacteristic(gyroCharacteristicUUID)
+                await gyroCharacteristic.startNotifications()
+
+                const gyroView = document.getElementById('gyro')
+                gyroCharacteristic.addEventListener('characteristicvaluechanged', (event) => { 
+                    const result = new Float32Array(event.target.value.buffer)
+                    Alpine.store('desiredOrientation', result.slice(-1))
+                    Alpine.store('orientation', result)
+                    
+                })
+
+                try {
+
+                const distCharacteristic = await service.getCharacteristic(distCharacteristicUUID)
+                await distCharacteristic.startNotifications()
+
+                distCharacteristic.addEventListener('characteristicvaluechanged', (event) => { 
+                    const result = new Uint16Array(event.target.value.buffer)
+                    Alpine.store('dists', result)
+                })
+                } catch (e) {
+                    console.log(e)
+                }
+                
+
+
+                actionCharacteristic = await service.getCharacteristic(actionCharacteristicUUID)
+                rotationCharacteristic = await service.getCharacteristic(rotationCharacteristicUUID)
+            }
+
+            function writeCommand(command, rotation) {
+                console.debug('command ' + command + ' ' + rotation ? rotation : '')
+                if(rotation) {
+                    rotationCharacteristic.writeValue(Float32Array.of(rotation))
+                }
+                writeAction(commandToAction[command])
+            }
+
+            function writeAction(action) {
+                if(!!actionCharacteristic) {
+                    Alpine.store('lastAction', action)
+                    console.debug('act')
+                    actionCharacteristic.writeValue(Uint8Array.of(action))
+                }
+            }
+
+            function getSensors() {
+                return Array.from(Alpine.store('dists'))
+            }
+
+            window.writeCommand = writeCommand
+            window.writeAction = writeAction
+            window.getSensors = getSensors
+
+            function stopAll() {
+                writeAction(0)
+                Alpine.store('stopAll', true)
+                Alpine.store('programLooping', false)
+                setTimeout(() => Alpine.store('stopAll', false), 3000)
+            }
+
+            const keyToAction = {
+                'ArrowUp': 1,
+                'ArrowDown': 2,
+                'ArrowLeft': 3,
+                'ArrowRight': 4,
+                ' ': 0
+            }
+
+            const commandToAction = {
+                'stop': 0,
+                'forward': 1,
+                'backward': 2,
+                'turnLeft': 3,
+                'turnRight': 4,
+                'turnTo': 5,
+                'rotate': 5
+            }
+            
+            document.addEventListener('keydown', (e) => {
+                if (['TEXTAREA', 'INPUT'].includes(e.target.tagName.toUpperCase())) {
+                    return
+                }
+                action = keyToAction[e.key]
+                if(action !== undefined) {
+                    writeAction(action)
+                }
+            })
+
+
+            const appendProgramResult = (text) => {
+                Alpine.store('programResult', text)
+            }
+
+            async function initPyodide() {
+                window.pyodide = await loadPyodide({
+                    stdout: appendProgramResult,
+                    stderr: appendProgramResult,
+                })
+                pyodide.runPython(`
+import pyodide.code as code
+def act(action): code.run_js(f'writeAction({action})')
+def get_sensors(): return code.run_js('getSensors()')
+`)
+            }
+            initPyodide()
+            
+            
+            let editor = null
+            ace.require("ace/ext/language_tools");
+            editor = ace.edit('control-editor')
+            editor.setTheme("ace/theme/monokai")
+            editor.session.setMode("ace/mode/python")
+            editor.setOptions({
+                enableBasicAutocompletion: true,
+                enableSnippets: false,
+                enableLiveAutocompletion: true
+            })
+            
+
+            const runProgram = () => {
+                try {
+                    pyodide.runPython(editor.getValue())
+                } catch (e) {
+                    appendProgramResult(e)
+                }
+            }
+
+            const loopProgram = () => {
+                if (!Alpine.store('stopAll')) {
+                    Alpine.store('programLooping', true)
+                    runProgram()
+                    setTimeout(loopProgram, 100)
+                } else {
+                    Alpine.store('programLooping', false)
+                }
+            }
+        </script>
     </body>
 </html>
