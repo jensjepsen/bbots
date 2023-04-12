@@ -345,6 +345,7 @@ import pyodide.code as code
 def act(action): code.run_js(f'writeAction({action})')
 def get_sensors(): return code.run_js('getSensors()')
 def iwantanautopilot(): return code.run_js('Alpine.store("showAutopilot", true)')
+def canwetalk(): return code.run_js('Alpine.store("showChat", true)')
 `)
             }
             initPyodide()
