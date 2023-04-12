@@ -2,6 +2,7 @@
 <html>
     <head>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+        <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/persist@3.x.x/dist/cdn.min.js"></script>
         <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
         <script src="gpt.js"></script>
@@ -102,7 +103,7 @@
                         <code id="code-result" class="block" x-text="$store.programResult"></code>
                         
                     </div>
-                    <div x-show="$store.showAutopilot" x-data="{started: false, options: {thresholds: {front: 100, left: 100, right: 100 }}}" class="row box">
+                    <div x-show="$store.showAutopilot" x-data="{started: false, options: {thresholds: $persist({front: 100, left: 100, right: 100 })}}" class="row box">
                         <template x-if="!started">
                             <button class="button is-primary" @click="Alpine.store('stopAll', false); started = true; nextRl(window.rl, options)">Enable Auto Pilot</button>
                         </template>
