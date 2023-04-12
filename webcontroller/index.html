@@ -40,12 +40,17 @@
             #control-editor {
                 min-height: 400px;
             }
+            #code-result {
+                display: block;
+                white-space: pre;
+                overflow-x: scroll;
+            }
         </style>
     </head>
     <body>
         <div class="container">
             <div class="columns is-justify-content-center">
-                <div class="column is-half">
+                <div class="column is-three-quarters">
                     <div class="row box">
                         <div class="block">
                             <button class="button is-primary" :disabled="$store.connected " x-data onclick="listen()" x-text="$store.connected ? 'Connected' : 'Connect'"></button>
@@ -76,33 +81,28 @@
                     
                     <div x-data class="row box">
                         <b>Program</b>
-                        <div class="columns">
-                            <div class="column">
-                                <div id="control-editor" class="block"></div>
-                            </div>
-                            <div class="column">
-                                <code x-html="$store.programResult"></code>
-                            </div>
-                        </div>
                         <div class="field is-grouped">
                             <p class="control">
-                                <button class="button is-info" @click="runProgram()">
+                                <button class="button is-info is-small" @click="runProgram()">
                                     Run
                                 </button>
                                 <template x-if="!$store.programLooping">
-                                    <button class="button is-info" @click="loopProgram()">
+                                    <button class="button is-info is-small" @click="loopProgram()">
                                         Loop
                                     </button>
                                 </template>
                                 <template x-if="$store.programLooping">
-                                    <button class="button is-danger" @click="stopAll()">
+                                    <button class="button is-danger is-small" @click="stopAll()">
                                         Stop
                                     </button>
                                 </template>
                             </p>
                         </div>
+                        <div id="control-editor" class="block"></div>
+                        <code id="code-result" class="block" x-text="$store.programResult"></code>
+                        
                     </div>
-                    <div x-data="{started: false, options: {thresholds: {front: 100, left: 100, right: 100 }}}" class="row box">
+                    <div x-show="$store.showAutopilot" x-data="{started: false, options: {thresholds: {front: 100, left: 100, right: 100 }}}" class="row box">
                         <template x-if="!started">
                             <button class="button is-primary" @click="Alpine.store('stopAll', false); started = true; nextRl(window.rl, options)">Enable Auto Pilot</button>
                         </template>
@@ -124,7 +124,7 @@
                             </p>
                         </div>
                     </div>
-                    <div class="row box">
+                    <div x-data x-show="$store.showChat" class="row box">
                         <div x-data="{ input: '', plan: [], planning: false, autoRun: true}" class="block">
                             <b>Plan</b>
                             <div class="field">
@@ -208,6 +208,8 @@
                 Alpine.store('stopAll', false)
                 Alpine.store('programResult', '')
                 Alpine.store('programLooping', false)
+                Alpine.store('showAutopilot', false)
+                Alpine.store('showChat', false)
             })
 
             window.rl = new RL('test2.onnx', 4, 10)
@@ -329,6 +331,7 @@
 
             const appendProgramResult = (text) => {
                 Alpine.store('programResult', text)
+                debugger
             }
 
             async function initPyodide() {
@@ -340,6 +343,7 @@
 import pyodide.code as code
 def act(action): code.run_js(f'writeAction({action})')
 def get_sensors(): return code.run_js('getSensors()')
+def iwantanautopilot(): return code.run_js('Alpine.store("showAutopilot", true)')
 `)
             }
             initPyodide()
@@ -355,8 +359,11 @@ def get_sensors(): return code.run_js('getSensors()')
                 enableSnippets: false,
                 enableLiveAutocompletion: true
             })
-            
-
+            const savedProgram = localStorage.getItem('program')
+            if(!!savedProgram) editor.setValue(savedProgram)
+            editor.on('change', () => {
+                localStorage.setItem('program', editor.getValue())
+            })
             const runProgram = () => {
                 try {
                     pyodide.runPython(editor.getValue())
