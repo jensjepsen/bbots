@@ -34,8 +34,8 @@ function nextRl (rl, options) {
     let dists = Array.from(Alpine.store('dists'))
     dists = [
         (dists[0] < options.thresholds.front) * 1.0, //| dists[1]
-        (dists[2] < options.thresholds.left) * 1.0,
-        (dists[3] < options.thresholds.right) * 1.0, 
+        (dists[1] < options.thresholds.left) * 1.0,
+        (dists[2] < options.thresholds.right) * 1.0, 
     ]
 
     const action2timeout = {

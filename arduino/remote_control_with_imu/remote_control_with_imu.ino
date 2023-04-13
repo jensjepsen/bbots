@@ -143,8 +143,8 @@ void setup() {
     }
     
     // Set the BLE service name (this is the name you will see when looking connecting to your bot) 
-    BLE.setLocalName("RobotService");
-    BLE.setDeviceName("RobotService");
+    BLE.setLocalName("Robot A");
+    BLE.setDeviceName("Robot A");
     BLE.setAdvertisedService(robotService);
 
     // Add BLE characteristics

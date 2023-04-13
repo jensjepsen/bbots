@@ -203,7 +203,7 @@
                 Alpine.store('connected', false)
                 Alpine.store('lastAction', 0)
                 Alpine.store('token', getToken() || '')
-                Alpine.store('dists', [0, 0, 0, 0])
+                Alpine.store('dists', [0, 0, 0])
                 Alpine.store('orientation', '')
                 Alpine.store('desiredOrientation', '')
                 Alpine.store('stopAll', false)
@@ -258,7 +258,7 @@
 
                 distCharacteristic.addEventListener('characteristicvaluechanged', (event) => { 
                     const result = new Uint16Array(event.target.value.buffer)
-                    Alpine.store('dists', result)
+                    Alpine.store('dists', [result[0], result[2], result[3]])
                 })
                 } catch (e) {
                     console.log(e)
