@@ -25,14 +25,14 @@ uint16_t distInfo[4];
 
 float imuInfo [4];
 
-BLEService robotService("6722b880-6e27-40b0-9e16-e51f6a71c52b"); // create service
+BLEService robotService("10001000-0000-1000-8000-e51f6a71c52b"); // create service
 
-BLEByteCharacteristic actionCharacteristic("10000000-0000-1000-8000-59da63e98e56", BLEWriteWithoutResponse);
-BLEFloatCharacteristic rotationCharacteristic("10000000-0000-1000-8000-b28b109156ff", BLEWriteWithoutResponse);
+BLEByteCharacteristic actionCharacteristic("10001000-0000-1000-8000-59da63e98e56", BLEWriteWithoutResponse);
+BLEFloatCharacteristic rotationCharacteristic("10001000-0000-1000-8000-b28b109156ff", BLEWriteWithoutResponse);
 
-BLEByteCharacteristic valueCharacteristic("10000000-0000-1000-8000-4fe1ea4b3dbb", BLENotify);
-BLECharacteristic gyroCharacteristic("10000000-0000-1000-8000-81e7e93e0c5d", BLENotify | BLEWriteWithoutResponse, sizeof(imuInfo));
-BLECharacteristic distInfoCharacteristic("10000000-0000-1000-8000-0242ac120002", BLENotify | BLEWriteWithoutResponse, sizeof(distInfo));
+BLEByteCharacteristic valueCharacteristic("10001000-0000-1000-8000-4fe1ea4b3dbb", BLENotify);
+BLECharacteristic gyroCharacteristic("10001000-0000-1000-8000-81e7e93e0c5d", BLENotify | BLEWriteWithoutResponse, sizeof(imuInfo));
+BLECharacteristic distInfoCharacteristic("10001000-0000-1000-8000-0242ac120002", BLENotify | BLEWriteWithoutResponse, sizeof(distInfo));
 
 unsigned int action = 0;
 
