@@ -192,11 +192,11 @@
         <script>
             const MAX_DIST = 2500;
             const serviceUUID = '6722b880-6e27-40b0-9e16-e51f6a71c52b';
-            const characteristicUUID = '1d38d82c-cdda-489e-bc1f-4fe1ea4b3dbb';
-            const actionCharacteristicUUID = 'a8603e05-3a8c-4cfa-a595-59da63e98e56';
-            const gyroCharacteristicUUID = '4f256ffc-3d99-4cc7-8da3-81e7e93e0c5d';
-            const distCharacteristicUUID = '01cef122-aed3-11ed-afa1-0242ac120002';
-            const rotationCharacteristicUUID = '91e2b3de-4bf8-4998-8a11-b28b109156ff';
+            const characteristicUUID = '10000000-0000-1000-8000-4fe1ea4b3dbb';
+            const actionCharacteristicUUID = '10000000-0000-1000-8000-59da63e98e56';
+            const gyroCharacteristicUUID = '10000000-0000-1000-8000-81e7e93e0c5d';
+            const distCharacteristicUUID = '10000000-0000-1000-8000-0242ac120002';
+            const rotationCharacteristicUUID = '10000000-0000-1000-8000-b28b109156ff';
             let actionCharacteristic = null;
 
             document.addEventListener('alpine:init', () => {
@@ -227,6 +227,7 @@
                 console.debug('pre connect')
                 const connection = await device.gatt.connect();
                 console.debug('connected')
+                
                 const service = await connection.getPrimaryService(serviceUUID);
                 console.debug('got service')
                 const characteristic = await service.getCharacteristic(characteristicUUID);

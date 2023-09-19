@@ -14,7 +14,6 @@ function waitFor(condition, next, frequency) {
 function modmod (e, d) {
     return e - Math.floor(e/d) * d
 }
-  
 
 function executePlan(plan, step) {
     step = step || 0

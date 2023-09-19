@@ -27,12 +27,12 @@ float imuInfo [4];
 
 BLEService robotService("6722b880-6e27-40b0-9e16-e51f6a71c52b"); // create service
 
-BLEByteCharacteristic actionCharacteristic("a8603e05-3a8c-4cfa-a595-59da63e98e56", BLEWriteWithoutResponse);
-BLEFloatCharacteristic rotationCharacteristic("91e2b3de-4bf8-4998-8a11-b28b109156ff", BLEWriteWithoutResponse);
+BLEByteCharacteristic actionCharacteristic("10000000-0000-1000-8000-59da63e98e56", BLEWriteWithoutResponse);
+BLEFloatCharacteristic rotationCharacteristic("10000000-0000-1000-8000-b28b109156ff", BLEWriteWithoutResponse);
 
-BLEByteCharacteristic valueCharacteristic("1d38d82c-cdda-489e-bc1f-4fe1ea4b3dbb", BLENotify);
-BLECharacteristic gyroCharacteristic("4f256ffc-3d99-4cc7-8da3-81e7e93e0c5d", BLENotify | BLEWriteWithoutResponse, sizeof(imuInfo));
-BLECharacteristic distInfoCharacteristic("01cef122-aed3-11ed-afa1-0242ac120002", BLENotify | BLEWriteWithoutResponse, sizeof(distInfo));
+BLEByteCharacteristic valueCharacteristic("10000000-0000-1000-8000-4fe1ea4b3dbb", BLENotify);
+BLECharacteristic gyroCharacteristic("10000000-0000-1000-8000-81e7e93e0c5d", BLENotify | BLEWriteWithoutResponse, sizeof(imuInfo));
+BLECharacteristic distInfoCharacteristic("10000000-0000-1000-8000-0242ac120002", BLENotify | BLEWriteWithoutResponse, sizeof(distInfo));
 
 unsigned int action = 0;
 
@@ -143,8 +143,8 @@ void setup() {
     }
     
     // Set the BLE service name (this is the name you will see when looking connecting to your bot) 
-    BLE.setLocalName("Robot A");
-    BLE.setDeviceName("Robot A");
+    BLE.setLocalName("Robot F");
+    BLE.setDeviceName("Robot F");
     BLE.setAdvertisedService(robotService);
 
     // Add BLE characteristics
